@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>APEX — ניהול פיננסי משפחתי</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#f5f0e8;
+  --cream2:#ede8de;
+  --cream3:#e4ddd0;
+  --ink:#2a2519;
+  --ink2:#5a5040;
+  --ink3:#9a8e7e;
+  --terra:#c17a4a;
+  --terra2:#a85f32;
+  --terra-bg:rgba(193,122,74,.08);
+  --green:#3a7d5e;
+  --green-bg:rgba(58,125,94,.08);
+  --red:#b54a3a;
+  --red-bg:rgba(181,74,58,.08);
+  --blue:#3a5a7d;
+  --br:rgba(42,37,25,.1);
+  --br2:rgba(42,37,25,.18);
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Heebo',sans-serif;
+  --r:10px;
+}
+html,body{height:100%;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:14px;-webkit-font-smoothing:antialiased}
+
+/* ── LAYOUT ── */
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--cream2);border-left:1px solid var(--br);display:flex;flex-direction:column;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:56px;background:var(--cream2);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 22px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:22px;scroll-behavior:smooth}
+.mob-nav{display:none}
+
+/* ── SIDEBAR ── */
+.logo{padding:24px 18px 18px;border-bottom:1px solid var(--br)}
+.logo-en{font-size:10px;font-weight:700;color:var(--terra);letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px}
+.logo-he{font-family:var(--serif);font-size:22px;color:var(--ink);line-height:1}
+.logo-sub{font-size:10px;color:var(--ink3);margin-top:5px}
+.nav{flex:1;padding:14px 10px;overflow-y:auto}
+.nav-lbl{font-size:9px;color:var(--ink3);letter-spacing:.12em;text-transform:uppercase;padding:8px 10px 4px;font-weight:500}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;color:var(--ink2);transition:all .15s;margin-bottom:1px;user-select:none}
+.ni:hover{background:var(--cream3);color:var(--ink)}
+.ni.act{background:var(--terra-bg);color:var(--terra);font-weight:600}
+.ni-ic{font-size:14px;width:17px;text-align:center;flex-shrink:0}
+.nbadge{margin-right:auto;background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700}
+.sb-sep{height:1px;background:var(--br);margin:8px 10px}
+.sb-foot{padding:14px 10px;border-top:1px solid var(--br)}
+.ucard{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:var(--cream)}
+.uav{width:32px;height:32px;border-radius:50%;background:var(--terra);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* ── TOPBAR ── */
+.page-title{font-family:var(--serif);font-size:18px;color:var(--ink);font-weight:600}
+.page-date{font-size:11px;color:var(--ink3);margin-top:1px}
+.top-actions{display:flex;gap:7px;align-items:center}
+.btn{padding:7px 14px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--sans);border:none;transition:all .15s;white-space:nowrap}
+.btn-ghost{background:transparent;color:var(--ink2);border:1px solid var(--br2)}
+.btn-ghost:hover{background:var(--cream3);color:var(--ink)}
+.btn-primary{background:var(--terra);color:#fff}
+.btn-primary:hover{background:var(--terra2)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(181,74,58,.2);padding:4px 9px;font-size:10px;border-radius:5px}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── VIEWS ── */
+.vw{display:none;animation:fi .18s ease}
+.vw.act{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* ── LOADER ── */
+.loader-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--ink3)}
+.spin{width:22px;height:22px;border:2px solid var(--br2);border-top-color:var(--terra);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── STAT CARDS ── */
+.sg4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.sg5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.sc{background:var(--cream2);border:1px solid var(--br);border-radius:var(--r);padding:15px 16px;transition:all .2s;position:relative}
+.sc:hover{border-color:var(--br2)}
+.sc-accent{border-right:3px solid var(--terra)}
+.sl{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;font-weight:500}
+.sv{font-size:22px;font-family:var(--serif);color:var(--ink);line-height:1;margin-bottom:4px}
+.sv-green{color:var(--green)}
+.sv-red{color:var(--red)}
+.sv-terra{color:var(--terra)}
+.sv-blue{color:var(--blue)}
+.sch{font-size:10px;color:var(--ink3);line-height:1.4}
+.sbar{height:2px;background:var(--cream3);border-radius:2px;margin-top:11px;overflow:hidden}
+.sfill{height:100%;border-radius:2px;transition:width .9s ease}
+
+/* ── PANELS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.g13{display:grid;grid-template-columns:1fr 1.5fr;gap:10px;margin-bottom:10px}
+.pan{background:#fff;border:1px solid var(--br);border-radius:var(--r);padding:18px;margin-bottom:10px}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pt2{font-family:var(--serif);font-size:14px;font-weight:600;color:var(--ink)}
+.pa{font-size:11px;color:var(--terra);cursor:pointer;font-weight:500}
+.pa:hover{text-decoration:underline}
+
+/* ── SECTION HEADER ── */
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--br)}
+.sec-accent{width:4px;height:36px;background:var(--terra);border-radius:2px;flex-shrink:0}
+.sec-title{font-family:var(--serif);font-size:16px;font-weight:600}
+.sec-sub{font-size:11px;color:var(--ink3);margin-top:2px}
+
+/* ── TRANSACTIONS ── */
+.xi{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--br)}
+.xi:last-child{border-bottom:none;padding-bottom:0}
+.xic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.xin{flex:1;min-width:0}
+.xnm{font-size:12px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xct{font-size:10px;color:var(--ink3);margin-top:1px}
+.xam{font-size:12px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.xam-inc{color:var(--green)}
+.xam-exp{color:var(--red)}
+
+/* ── DELETE BTN inline ── */
+.del-btn{opacity:0;background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:3px 6px;border-radius:4px;transition:all .15s;flex-shrink:0}
+.xi:hover .del-btn,
+.ti:hover .del-btn,
+.hr:hover .del-btn,
+.gi:hover .del-btn,
+.rb:hover .del-btn{opacity:1}
+.del-btn:hover{background:var(--red-bg)}
+
+/* ── BUDGET BARS ── */
+.bi{margin-bottom:13px}
+.bi:last-child{margin-bottom:0}
+.bh{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.bc{font-size:11px;font-weight:500;color:var(--ink)}
+.bn{font-size:10px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.bt{height:5px;background:var(--cream3);border-radius:3px;overflow:hidden}
+.bprog{height:100%;border-radius:3px;transition:width .8s ease}
+
+/* ── MONTHLY TABLE ── */
+.mtable{width:100%;border-collapse:collapse;font-size:11px}
+.mtable th{text-align:center;padding:7px 5px;color:var(--ink3);font-weight:500;font-size:10px;border-bottom:1px solid var(--br);letter-spacing:.04em}
+.mtable th:first-child{text-align:right}
+.mtable td{padding:7px 5px;text-align:center;border-bottom:1px solid var(--br);font-variant-numeric:tabular-nums;color:var(--ink)}
+.mtable td:first-child{text-align:right;font-weight:500;color:var(--ink2)}
+.mtable tr:last-child td{border-bottom:none}
+.mtable tr.tr-total td{font-weight:700;color:var(--ink);background:var(--cream2)}
+.cell-g{color:var(--green)}.cell-r{color:var(--red)}.cell-m{color:var(--ink3)}
+
+/* ── LOANS ── */
+.loan-card{background:var(--cream2);border:1px solid var(--br);border-radius:var(--r);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.loan-card:last-child{margin-bottom:0}
+.loan-icon{width:36px;height:36px;border-radius:8px;background:var(--red-bg);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.loan-info{flex:1;min-width:0}
+.loan-name{font-size:12px;font-weight:600;color:var(--ink)}
+.loan-meta{font-size:10px;color:var(--ink3);margin-top:2px}
+.loan-bar{height:4px;background:var(--cream3);border-radius:2px;overflow:hidden;margin-top:8px}
+.loan-fill{height:100%;background:var(--red);border-radius:2px}
+.loan-right{text-align:left;flex-shrink:0}
+.loan-amt{font-family:var(--serif);font-size:14px;font-weight:600;color:var(--red)}
+.loan-pay{font-size:10px;color:var(--ink3);margin-top:2px}
+
+/* ── SAVINGS ── */
+.sav-card{background:var(--cream2);border:1px solid var(--br);border-radius:var(--r);padding:13px;margin-bottom:8px}
+.sav-card:last-child{margin-bottom:0}
+.sav-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.sav-name{font-size:12px;font-weight:600;color:var(--ink)}
+.sav-pct{font-size:11px;color:var(--terra);font-weight:600}
+.sav-bar{height:5px;background:var(--cream3);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.sav-fill{height:100%;background:var(--terra);border-radius:3px}
+.sav-nums{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3)}
+
+/* ── TASKS ── */
+.kcols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.kcol{background:#fff;border:1px solid var(--br);border-radius:var(--r);padding:14px}
+.kcol-head{display:flex;align-items:center;gap:7px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--br)}
+.kcol-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.kcol-title{font-size:12px;font-weight:600;color:var(--ink);flex:1}
+.kcol-count{font-size:10px;color:var(--ink3);background:var(--cream2);padding:1px 7px;border-radius:10px}
+.ti{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--br)}
+.ti:last-child{border-bottom:none}
+.chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--br2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s;font-size:9px;font-weight:700;background:#fff}
+.chk.done{background:var(--green);border-color:var(--green);color:#fff}
+.tb{flex:1;min-width:0}
+.tt{font-size:12px;font-weight:500;color:var(--ink);line-height:1.4}
+.tt.done{text-decoration:line-through;color:var(--ink3)}
+.tm{display:flex;gap:5px;margin-top:3px;align-items:center;flex-wrap:wrap}
+.du{font-size:10px;color:var(--ink3)}
+.tag{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:500;white-space:nowrap}
+.kempty{text-align:center;color:var(--ink3);padding:16px 0;font-size:11px}
+.kadd{width:100%;margin-top:8px;padding:7px;border-radius:6px;background:transparent;border:1px dashed var(--br2);color:var(--ink3);font-size:11px;cursor:pointer;font-family:var(--sans);transition:all .15s}
+.kadd:hover{border-color:var(--terra);color:var(--terra)}
+
+/* ── HABITS ── */
+.hr{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--br)}
+.hr:last-child{border-bottom:none}
+.hn{flex:1;font-size:12px;font-weight:500;color:var(--ink)}
+.hbtn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--br2);background:#fff;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;color:var(--ink3)}
+.hbtn.done{background:var(--green);border-color:var(--green);color:#fff}
+.hbtn:hover:not(.done){border-color:var(--terra);color:var(--terra)}
+.hstreak{font-size:10px;color:var(--terra);min-width:28px;text-align:left;font-weight:600}
+
+/* ── GOALS ── */
+.gi{padding:14px;background:var(--cream2);border-radius:var(--r);border:1px solid var(--br);margin-bottom:9px;transition:border-color .2s;position:relative}
+.gi:hover{border-color:var(--br2)}
+.gi:last-child{margin-bottom:0}
+.gh{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.gt{font-size:12px;font-weight:600;color:var(--ink);flex:1}
+.gz{font-size:10px;color:var(--ink3)}
+.gdesc{font-size:11px;color:var(--ink3);margin-bottom:7px;line-height:1.5}
+.gbar{height:5px;background:var(--cream3);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.gfill{height:100%;border-radius:3px;transition:width .8s ease}
+.gpct{font-size:10px;color:var(--terra);font-weight:600}
+
+/* ── REFLECTIONS ── */
+.rb{background:var(--cream2);border:1px solid var(--br);border-radius:var(--r);padding:14px;margin-bottom:9px;position:relative;transition:border-color .2s}
+.rb:hover{border-color:var(--br2)}
+.rb:last-child{margin-bottom:0}
+.rb::before{content:'';position:absolute;top:0;right:0;bottom:0;width:3px;background:var(--terra);border-radius:0 var(--r) var(--r) 0}
+.rdate{font-size:10px;color:var(--ink3);margin-bottom:6px}
+.rtext{font-size:12px;line-height:1.7;color:var(--ink)}
+.rmood{font-size:10px;margin-top:8px;display:flex;gap:6px;align-items:center;color:var(--ink3)}
+.mdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(42,37,25,.5);display:flex;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(4px)}
+.modal{background:var(--cream);border:1px solid var(--br2);border-radius:14px;padding:24px;width:400px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(42,37,25,.2)}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.mht{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink)}
+.mcl{background:none;border:none;color:var(--ink3);font-size:20px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1}
+.mcl:hover{background:var(--cream3);color:var(--ink)}
+.mfl{display:flex;flex-direction:column;gap:12px}
+.lbl{font-size:11px;color:var(--ink2);margin-bottom:4px;font-weight:500}
+.inp{width:100%;padding:9px 12px;background:#fff;border:1px solid var(--br2);border-radius:8px;color:var(--ink);font-family:var(--sans);font-size:12px;direction:rtl;transition:border-color .15s}
+.inp:focus{outline:none;border-color:var(--terra)}
+textarea.inp{resize:vertical;min-height:80px}
+.sel{width:100%;padding:9px 12px;background:#fff;border:1px solid var(--br2);border-radius:8px;color:var(--ink);font-family:var(--sans);font-size:12px;direction:rtl;cursor:pointer}
+.sel:focus{outline:none;border-color:var(--terra)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mfoot{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+
+/* ── CONFIRM DIALOG ── */
+.confirm-box{background:var(--cream);border:1px solid var(--br2);border-radius:14px;padding:24px;width:320px;max-width:95vw;text-align:center}
+.confirm-title{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.confirm-sub{font-size:12px;color:var(--ink3);line-height:1.6;margin-bottom:20px}
+.confirm-actions{display:flex;gap:8px;justify-content:center}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;border-radius:10px;padding:10px 20px;font-size:12px;font-weight:500;z-index:9999;transition:transform .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;box-shadow:0 8px 30px rgba(42,37,25,.25)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.ok::before{content:'✓  '}
+.toast.err::before{content:'⚠  '}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:28px 16px;color:var(--ink3)}
+.empty-icon{font-size:28px;margin-bottom:8px;opacity:.4}
+.empty-text{font-size:12px;line-height:1.6}
+
+/* ── MOBILE NAV ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .sg4{grid-template-columns:1fr 1fr}
+  .sg5{grid-template-columns:1fr 1fr}
+  .g2,.g3,.g13{grid-template-columns:1fr}
+  .kcols{grid-template-columns:1fr}
+  .mob-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--cream2);border-top:1px solid var(--br);padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:100;justify-content:space-around}
+  .mni{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:8px;cursor:pointer;transition:all .15s;flex:1}
+  .mni.act{background:var(--terra-bg)}
+  .mni-ic{font-size:18px;line-height:1}
+  .mni-lbl{font-size:9px;color:var(--ink3);font-weight:500}
+  .mni.act .mni-lbl{color:var(--terra)}
+  .content{padding:14px 14px 90px}
+  .topbar{padding:0 14px}
+  .top-actions .btn-ghost{display:none}
+  .toast{bottom:90px}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-en">APEX</div>
+    <div class="logo-he">ניהול אישי</div>
+    <div class="logo-sub">משפחתי · חודשי · שנתי</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-lbl">סקירה</div>
+    <div class="ni act" onclick="sw('db',this)"><span class="ni-ic">◈</span>לוח בקרה</div>
+    <div class="sb-sep"></div>
+    <div class="nav-lbl">פיננסי</div>
+    <div class="ni" onclick="sw('inc',this)"><span class="ni-ic">↑</span>הכנסות</div>
+    <div class="ni" onclick="sw('exp',this)"><span class="ni-ic">↓</span>הוצאות</div>
+    <div class="ni" onclick="sw('loans',this)"><span class="ni-ic">⊕</span>הלוואות</div>
+    <div class="ni" onclick="sw('sav',this)"><span class="ni-ic">◎</span>חיסכון</div>
+    <div class="ni" onclick="sw('tx',this)"><span class="ni-ic">≡</span>עסקאות</div>
+    <div class="sb-sep"></div>
+    <div class="nav-lbl">יומי</div>
+    <div class="ni" onclick="sw('hg',this)"><span class="ni-ic">✦</span>הרגלים</div>
+    <div class="ni" onclick="sw('mt',this)"><span class="ni-ic">◉</span>מטרות</div>
+    <div class="ni" onclick="sw('rf',this)"><span class="ni-ic">✎</span>רפלקציות</div>
+    <div class="ni" onclick="sw('ms',this)"><span class="ni-ic">☐</span>משימות<span class="nbadge" id="task-badge">0</span></div>
+  </nav>
+  <div class="sb-foot">
+    <div class="ucard">
+      <div class="uav">מ</div>
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--ink)">תקציב משפחתי</div>
+        <div style="font-size:10px;color:var(--ink3)">מחובר ל-Sheets ✓</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="ptitle">לוח בקרה</div>
+      <div class="page-date" id="pdate"></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="openModal('tx')">+ עסקה</button>
+      <button class="btn btn-ghost" onclick="openModal('task')">+ משימה</button>
+      <button class="btn btn-primary" onclick="openModal('habit')">+ הרגל</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- לוח בקרה -->
+    <div class="vw act" id="vw-db">
+      <div class="sg5">
+        <div class="sc sc-accent">
+          <div class="sl">הכנסות שנתיות</div>
+          <div class="sv sv-green">₪176,780</div>
+          <div class="sch">מכל המקורות</div>
+          <div class="sbar"><div class="sfill" style="width:100%;background:var(--green)"></div></div>
+        </div>
+        <div class="sc">
+          <div class="sl">הוצאות שנתיות</div>
+          <div class="sv sv-red">₪140,319</div>
+          <div class="sch">קבועות + משתנות</div>
+          <div class="sbar"><div class="sfill" style="width:79%;background:var(--red)"></div></div>
+        </div>
+        <div class="sc sc-accent">
+          <div class="sl">יתרה שנתית</div>
+          <div class="sv sv-terra">₪36,461</div>
+          <div class="sch">לאחר כל הוצאות</div>
+          <div class="sbar"><div class="sfill" style="width:21%;background:var(--terra)"></div></div>
+        </div>
+        <div class="sc">
+          <div class="sl">יתרת הלוואות</div>
+          <div class="sv sv-red">₪215,300</div>
+          <div class="sch">₪2,470 לחודש</div>
+          <div class="sbar"><div class="sfill" style="width:60%;background:var(--red)"></div></div>
+        </div>
+        <div class="sc">
+          <div class="sl">חיסכון נוכחי</div>
+          <div class="sv sv-terra">₪27,000</div>
+          <div class="sch">75% מהיעד</div>
+          <div class="sbar"><div class="sfill" style="width:75%;background:var(--terra)"></div></div>
+        </div>
+      </div>
+
+      <!-- טבלה חודשית -->
+      <div class="pan">
+        <div class="ph">
+          <span class="pt2">לוח בקרה חודשי — 2024</span>
+          <span class="pa" onclick="sw('exp',null)">פירוט מלא ←</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="mtable">
+            <thead><tr><th>קטגוריה</th><th>אוגוסט</th><th>ספטמבר</th><th>אוקטובר</th><th>נובמבר</th><th>דצמבר</th><th>סה"כ</th></tr></thead>
+            <tbody>
+              <tr><td>הכנסות</td><td class="cell-g">66,900</td><td class="cell-g">23,670</td><td class="cell-g">28,470</td><td class="cell-g">26,770</td><td class="cell-g">30,970</td><td class="cell-g">176,780</td></tr>
+              <tr><td>הוצאות קבועות</td><td class="cell-r">7,747</td><td class="cell-r">9,068</td><td class="cell-r">9,068</td><td class="cell-r">9,068</td><td class="cell-r">9,068</td><td class="cell-r">44,019</td></tr>
+              <tr><td>הוצאות משתנות</td><td class="cell-r">58,350</td><td class="cell-r">8,600</td><td class="cell-r">7,700</td><td class="cell-r">4,600</td><td class="cell-r">4,700</td><td class="cell-r">83,950</td></tr>
+              <tr><td>הלוואות</td><td class="cell-r">2,470</td><td class="cell-r">2,470</td><td class="cell-r">2,470</td><td class="cell-r">2,470</td><td class="cell-r">2,470</td><td class="cell-r">12,350</td></tr>
+              <tr class="tr-total"><td>יתרה חודשית</td><td class="cell-r">-1,667</td><td class="cell-g">3,532</td><td class="cell-g">9,232</td><td class="cell-g">10,632</td><td class="cell-g">14,732</td><td class="cell-g">36,461</td></tr>
+              <tr><td>חיסכון מתוכנן</td><td class="cell-m">1,000</td><td class="cell-m">3,000</td><td class="cell-m">3,000</td><td class="cell-m">3,000</td><td class="cell-m">3,000</td><td class="cell-m">13,000</td></tr>
+              <tr class="tr-total"><td>יתרה סופית</td><td class="cell-r">-2,667</td><td class="cell-g">532</td><td class="cell-g">6,232</td><td class="cell-g">7,632</td><td class="cell-g">11,732</td><td class="cell-g">23,461</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="pan">
+          <div class="ph"><span class="pt2">עסקאות אחרונות</span><span class="pa" onclick="sw('tx',null)">הכל ←</span></div>
+          <div id="db-tx"><div class="loader-wrap"><div class="spin"></div></div></div>
+        </div>
+        <div class="pan">
+          <div class="ph"><span class="pt2">הרגלים — היום</span><span class="pa" onclick="sw('hg',null)">הכל ←</span></div>
+          <div id="db-habits"><div class="loader-wrap"><div class="spin"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- הכנסות -->
+    <div class="vw" id="vw-inc">
+      <div class="sec-head"><div class="sec-accent"></div><div><div class="sec-title">הכנסות</div><div class="sec-sub">מכל מקורות ההכנסה</div></div></div>
+      <div class="sg4">
+        <div class="sc sc-accent"><div class="sl">משכורת א׳</div><div class="sv sv-green">₪43,800</div><div class="sch">₪6,400–₪12,000/חודש</div></div>
+        <div class="sc"><div class="sl">משכורת ב׳</div><div class="sv sv-green">₪51,580</div><div class="sch">₪4,500–₪11,770/חודש</div></div>
+        <div class="sc"><div class="sl">פרילנס</div><div class="sv sv-terra">₪7,500</div><div class="sch">₪2,500 × 3 חודשים</div></div>
+        <div class="sc"><div class="sl">מענקים ובונוסים</div><div class="sv sv-green">₪58,900</div><div class="sch">כולל חד-פעמי</div></div>
+      </div>
+      <div class="pan">
+        <div class="ph"><span class="pt2">הכנסות שנרשמו ב-Sheets</span><button class="btn btn-primary" style="font-size:10px;padding:5px 11px" onclick="openModal('tx')">+ הוסף</button></div>
+        <div id="inc-live"><div class="loader-wrap"><div class="spin"></div></div></div>
+      </div>
+    </div>
+
+    <!-- הוצאות -->
+    <div class="vw" id="vw-exp">
+      <div class="sec-head"><div class="sec-accent"></div><div><div class="sec-title">הוצאות</div><div class="sec-sub">קבועות ומשתנות</div></div></div>
+      <div class="g2">
+        <div class="pan">
+          <div class="ph"><span class="pt2">הוצאות קבועות חודשיות</span></div>
+          <div class="bi"><div class="bh"><span class="bc">משכנתא / שכירות</span><span class="bn">₪4,500</span></div><div class="bt"><div class="bprog" style="width:58%;background:var(--blue)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">חינוך — גנים / צהרונים</span><span class="bn">₪1,300</span></div><div class="bt"><div class="bprog" style="width:17%;background:var(--terra)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">מנויים</span><span class="bn">₪675</span></div><div class="bt"><div class="bprog" style="width:9%;background:var(--ink2)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">חשמל</span><span class="bn">₪500</span></div><div class="bt"><div class="bprog" style="width:6%;background:var(--terra)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">אינטרנט + טלוויזיה</span><span class="bn">₪600</span></div><div class="bt"><div class="bprog" style="width:8%;background:var(--blue)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">ביטוח בריאות + חיים</span><span class="bn">₪633</span></div><div class="bt"><div class="bprog" style="width:8%;background:var(--green)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">ארנונה + ועד + מים + גז</span><span class="bn">₪790</span></div><div class="bt"><div class="bprog" style="width:10%;background:var(--ink3)"></div></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding-top:10px;border-top:1px solid var(--br)"><span>סה"כ קבועות</span><span style="color:var(--red)">₪9,068 / חודש</span></div>
+        </div>
+        <div class="pan">
+          <div class="ph"><span class="pt2">הוצאות משתנות שנתיות</span></div>
+          <div class="bi"><div class="bh"><span class="bc">הפתעות / חד-פעמי</span><span class="bn">₪62,700</span></div><div class="bt"><div class="bprog" style="width:75%;background:var(--red)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">מזון וסופרמרקט</span><span class="bn">₪12,000</span></div><div class="bt"><div class="bprog" style="width:14%;background:var(--green)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">סיגריות</span><span class="bn">₪3,750</span></div><div class="bt"><div class="bprog" style="width:4%;background:var(--ink2)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">תחבורה ודלק</span><span class="bn">₪2,200</span></div><div class="bt"><div class="bprog" style="width:3%;background:var(--blue)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">קוסמטיקה וטיפוח</span><span class="bn">₪1,800</span></div><div class="bt"><div class="bprog" style="width:2%;background:var(--terra)"></div></div></div>
+          <div class="bi"><div class="bh"><span class="bc">טיפול אלינה</span><span class="bn">₪1,500</span></div><div class="bt"><div class="bprog" style="width:2%;background:var(--terra)"></div></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;padding-top:10px;border-top:1px solid var(--br)"><span>סה"כ משתנות</span><span style="color:var(--red)">₪83,950 / שנה</span></div>
+        </div>
+      </div>
+      <div class="pan">
+        <div class="ph"><span class="pt2">הוצאות שנרשמו ב-Sheets</span><button class="btn btn-primary" style="font-size:10px;padding:5px 11px" onclick="openModal('tx')">+ הוסף</button></div>
+        <div id="exp-live"><div class="loader-wrap"><div class="spin"></div></div></div>
+      </div>
+    </div>
+
+    <!-- הלוואות -->
+    <div class="vw" id="vw-loans">
+      <div class="sec-head"><div class="sec-accent"></div><div><div class="sec-title">הלוואות והתחייבויות</div><div class="sec-sub">מעקב אחר כל ההתחייבויות</div></div></div>
+      <div class="sg4">
+        <div class="sc"><div class="sl">סה"כ חוב</div><div class="sv sv-red">₪215,300</div><div class="sch">יתרה לפירעון</div></div>
+        <div class="sc"><div class="sl">תשלום חודשי</div><div class="sv sv-red">₪2,470</div><div class="sch">כל חודש</div></div>
+        <div class="sc"><div class="sl">הלוואה</div><div class="sv sv-red">₪12,300</div><div class="sch">סיום 2027</div></div>
+        <div class="sc"><div class="sl">הלוואת רכב</div><div class="sv sv-red">₪203,000</div><div class="sch">סיום 2030</div></div>
+      </div>
+      <div class="pan">
+        <div class="ph"><span class="pt2">פירוט הלוואות</span></div>
+        <div class="loan-card">
+          <div class="loan-icon">💳</div>
+          <div class="loan-info">
+            <div class="loan-name">הלוואה</div>
+            <div class="loan-meta">הלוואה רגילה · סיום: 2027</div>
+            <div class="loan-bar"><div class="loan-fill" style="width:35%"></div></div>
+            <div style="font-size:10px;color:var(--ink3);margin-top:3px">₪12,300 נותרו</div>
+          </div>
+          <div class="loan-right"><div class="loan-amt">₪12,300</div><div class="loan-pay">₪890/חודש</div></div>
+        </div>
+        <div class="loan-card">
+          <div class="loan-icon">🚗</div>
+          <div class="loan-info">
+            <div class="loan-name">הלוואת רכב</div>
+            <div class="loan-meta">הלוואת רכב · סיום: 2030</div>
+            <div class="loan-bar"><div class="loan-fill" style="width:72%"></div></div>
+            <div style="font-size:10px;color:var(--ink3);margin-top:3px">₪203,000 נותרו</div>
+          </div>
+          <div class="loan-right"><div class="loan-amt">₪203,000</div><div class="loan-pay">₪1,580/חודש</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- חיסכון -->
+    <div class="vw" id="vw-sav">
+      <div class="sec-head"><div class="sec-accent"></div><div><div class="sec-title">חיסכון והשקעות</div><div class="sec-sub">מעקב אחר יעדי החיסכון</div></div></div>
+      <div class="sg4">
+        <div class="sc sc-accent"><div class="sl">יעד חיסכון</div><div class="sv sv-terra">₪36,000</div></div>
+        <div class="sc"><div class="sl">יתרה נוכחית</div><div class="sv sv-terra">₪27,000</div><div class="sch">75% מהיעד</div></div>
+        <div class="sc"><div class="sl">הפקדה חודשית</div><div class="sv sv-green">₪1,000</div></div>
+        <div class="sc"><div class="sl">חיסכון שנתי</div><div class="sv sv-green">₪13,000</div><div class="sch">לאחר הוצאות</div></div>
+      </div>
+      <div class="pan">
+        <div class="ph"><span class="pt2">יעדי חיסכון</span></div>
+        <div class="sav-card">
+          <div class="sav-head"><span class="sav-name">קרן חירום</span><span class="sav-pct">100%</span></div>
+          <div class="sav-bar"><div class="sav-fill" style="width:100%"></div></div>
+          <div class="sav-nums"><span>₪1,000 נוכחי</span><span>יעד: ₪1,000</span></div>
+        </div>
+        <div class="sav-card">
+          <div class="sav-head"><span class="sav-name">תיק השקעות</span><span class="sav-pct">74%</span></div>
+          <div class="sav-bar"><div class="sav-fill" style="width:74%"></div></div>
+          <div class="sav-nums"><span>₪26,000 נוכחי</span><span>יעד: ₪35,000</span></div>
+        </div>
+        <div class="sav-card" style="opacity:.55;border:1px dashed var(--br2)">
+          <div class="sav-head"><span class="sav-name">חיסכון לילדים</span><span class="sav-pct">0%</span></div>
+          <div class="sav-bar"><div class="sav-fill" style="width:0%"></div></div>
+          <div class="sav-nums"><span>₪0</span><span>טרם הוגדר יעד</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- עסקאות -->
+    <div class="vw" id="vw-tx">
+      <div class="pan">
+        <div class="ph"><span class="pt2">כל העסקאות</span><button class="btn btn-primary" style="font-size:10px;padding:5px 11px" onclick="openModal('tx')">+ הוסף עסקה</button></div>
+        <div id="tx-full"><div class="loader-wrap"><div class="spin"></div></div></div>
+      </div>
+    </div>
+
+    <!-- הרגלים -->
+    <div class="vw" id="vw-hg">
+      <div class="pan">
+        <div class="ph"><span class="pt2">הרגלים יומיים</span><button class="btn btn-primary" style="font-size:10px;padding:5px 11px" onclick="openModal('habit')">+ הרגל חדש</button></div>
+        <div id="hg-list"><div class="loader-wrap"><div class="spin"></div></div></div>
+      </div>
+    </div>
+
+    <!-- מטרות -->
+    <div class="vw" id="vw-mt">
+      <div class="pan">
+        <div class="ph"><span class="pt2">המטרות שלי</span><button class="btn btn-primary" style="font-size:10px;padding:5px 11px" onclick="openModal('goal')">+ מטרה חדשה</button></div>
+        <div class="g3" id="mt-list" style="margin-bottom:0"></div>
+      </div>
+    </div>
+
+    <!-- רפלקציות -->
+    <div class="vw" id="vw-rf">
+      <div class="pan">
+        <div class="ph"><span class="pt2">רפלקציות יומיות</span><button class="btn btn-primary" style="font-size:10px;padding:5px 11px" onclick="openModal('reflect')">+ כתוב היום</button></div>
+        <div id="rf-list"><div class="loader-wrap"><div class="spin"></div></div></div>
+      </div>
+    </div>
+
+    <!-- משימות -->
+    <div class="vw" id="vw-ms">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button class="btn btn-primary" onclick="openModal('task')">+ משימה חדשה</button>
+      </div>
+      <div class="kcols" id="ms-board"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- MOBILE NAV -->
+<div class="mob-nav">
+  <div class="mni act" onclick="swMob('db',this)"><div class="mni-ic">◈</div><div class="mni-lbl">בקרה</div></div>
+  <div class="mni" onclick="swMob('tx',this)"><div class="mni-ic">≡</div><div class="mni-lbl">עסקאות</div></div>
+  <div class="mni" onclick="swMob('hg',this)"><div class="mni-ic">✦</div><div class="mni-lbl">הרגלים</div></div>
+  <div class="mni" onclick="swMob('ms',this)"><div class="mni-ic">☐</div><div class="mni-lbl">משימות</div></div>
+  <div class="mni" onclick="swMob('mt',this)"><div class="mni-ic">◉</div><div class="mni-lbl">מטרות</div></div>
+</div>
+
+<!-- MODALS -->
+<div class="overlay" id="m-tx" style="display:none" onclick="if(event.target===this)closeModal('tx')">
+<div class="modal">
+  <div class="mh"><span class="mht">+ עסקה חדשה</span><button class="mcl" onclick="closeModal('tx')">×</button></div>
+  <div class="mfl">
+    <div class="r2">
+      <div><div class="lbl">סוג</div><select class="sel" id="tx-type"><option value="expense">הוצאה</option><option value="income">הכנסה</option></select></div>
+      <div><div class="lbl">סכום (₪)</div><input class="inp" id="tx-amt" type="number" placeholder="0" min="0"></div>
+    </div>
+    <div><div class="lbl">תיאור</div><input class="inp" id="tx-desc" placeholder="קפה, שכר דירה..."></div>
+    <div><div class="lbl">קטגוריה</div>
+      <select class="sel" id="tx-cat">
+        <option>מזון</option><option>דיור</option><option>תחבורה</option><option>בידור</option>
+        <option>בריאות</option><option>לימודים</option><option>הכנסה</option><option>הלוואות</option><option>אחר</option>
+      </select>
+    </div>
+  </div>
+  <div class="mfoot"><button class="btn btn-ghost" onclick="closeModal('tx')">ביטול</button><button class="btn btn-primary" onclick="submitTx()">שמור בגיליון</button></div>
+</div></div>
+
+<div class="overlay" id="m-task" style="display:none" onclick="if(event.target===this)closeModal('task')">
+<div class="modal">
+  <div class="mh"><span class="mht">+ משימה חדשה</span><button class="mcl" onclick="closeModal('task')">×</button></div>
+  <div class="mfl">
+    <div><div class="lbl">כותרת</div><input class="inp" id="task-title" placeholder="מה צריך לעשות?"></div>
+    <div class="r2">
+      <div><div class="lbl">קטגוריה</div><select class="sel" id="task-cat"><option value="עבודה">עבודה</option><option value="אישי">אישי</option><option value="בריאות">בריאות</option><option value="כספים">כספים</option></select></div>
+      <div><div class="lbl">עמודה</div><select class="sel" id="task-col"><option value="active">פעיל</option><option value="inprogress">בביצוע</option><option value="done">הושלם</option></select></div>
+    </div>
+    <div class="r2">
+      <div><div class="lbl">תאריך יעד</div><input class="inp" id="task-due" type="date"></div>
+      <div><div class="lbl">עדיפות</div><select class="sel" id="task-pri"><option value="רגיל">רגיל</option><option value="גבוהה">גבוהה</option><option value="דחוף">דחוף</option></select></div>
+    </div>
+  </div>
+  <div class="mfoot"><button class="btn btn-ghost" onclick="closeModal('task')">ביטול</button><button class="btn btn-primary" onclick="submitTask()">שמור בגיליון</button></div>
+</div></div>
+
+<div class="overlay" id="m-habit" style="display:none" onclick="if(event.target===this)closeModal('habit')">
+<div class="modal">
+  <div class="mh"><span class="mht">+ הרגל חדש</span><button class="mcl" onclick="closeModal('habit')">×</button></div>
+  <div class="mfl">
+    <div class="r2">
+      <div><div class="lbl">סמל</div><input class="inp" id="hab-emoji" placeholder="🧘" maxlength="2" style="font-size:22px;text-align:center"></div>
+      <div><div class="lbl">שם ההרגל</div><input class="inp" id="hab-name" placeholder="מדיטציה, ריצה..."></div>
+    </div>
+    <div><div class="lbl">יעד שבועי</div><select class="sel" id="hab-target"><option value="7">כל יום</option><option value="5">5 ימים</option><option value="3">3 ימים</option></select></div>
+  </div>
+  <div class="mfoot"><button class="btn btn-ghost" onclick="closeModal('habit')">ביטול</button><button class="btn btn-primary" onclick="submitHabit()">שמור בגיליון</button></div>
+</div></div>
+
+<div class="overlay" id="m-goal" style="display:none" onclick="if(event.target===this)closeModal('goal')">
+<div class="modal">
+  <div class="mh"><span class="mht">+ מטרה חדשה</span><button class="mcl" onclick="closeModal('goal')">×</button></div>
+  <div class="mfl">
+    <div class="r2">
+      <div><div class="lbl">סמל</div><input class="inp" id="g-emoji" placeholder="🎯" maxlength="2" style="font-size:22px;text-align:center"></div>
+      <div><div class="lbl">שם המטרה</div><input class="inp" id="g-name" placeholder="שם המטרה..."></div>
+    </div>
+    <div><div class="lbl">תיאור</div><input class="inp" id="g-desc" placeholder="תאר את המטרה..."></div>
+    <div class="r2">
+      <div><div class="lbl">ערך יעד</div><input class="inp" id="g-target" type="number" placeholder="100000"></div>
+      <div><div class="lbl">ערך נוכחי</div><input class="inp" id="g-current" type="number" placeholder="0"></div>
+    </div>
+    <div><div class="lbl">מועד יעד</div><input class="inp" id="g-timeline" placeholder="2027..."></div>
+  </div>
+  <div class="mfoot"><button class="btn btn-ghost" onclick="closeModal('goal')">ביטול</button><button class="btn btn-primary" onclick="submitGoal()">שמור בגיליון</button></div>
+</div></div>
+
+<div class="overlay" id="m-reflect" style="display:none" onclick="if(event.target===this)closeModal('reflect')">
+<div class="modal">
+  <div class="mh"><span class="mht">✎ רפלקציה יומית</span><button class="mcl" onclick="closeModal('reflect')">×</button></div>
+  <div class="mfl">
+    <div><div class="lbl">מה היה מיוחד היום?</div><textarea class="inp" id="rf-text" rows="4" placeholder="כתוב את המחשבות שלך..."></textarea></div>
+    <div><div class="lbl">מצב רוח</div><select class="sel" id="rf-mood"><option value="ממוקד ורגוע">ממוקד ורגוע</option><option value="פרודוקטיבי">פרודוקטיבי</option><option value="עייף אך אסיר תודה">עייף אך אסיר תודה</option><option value="מאתגר">מאתגר</option></select></div>
+  </div>
+  <div class="mfoot"><button class="btn btn-ghost" onclick="closeModal('reflect')">ביטול</button><button class="btn btn-primary" onclick="submitReflect()">שמור בגיליון</button></div>
+</div></div>
+
+<!-- CONFIRM -->
+<div class="overlay" id="m-confirm" style="display:none">
+<div class="confirm-box">
+  <div class="confirm-title" id="confirm-title">למחוק?</div>
+  <div class="confirm-sub" id="confirm-sub">פעולה זו תמחק את הרשומה מהגיליון ולא ניתן לבטלה.</div>
+  <div class="confirm-actions">
+    <button class="btn btn-ghost" onclick="document.getElementById('m-confirm').style.display='none'">ביטול</button>
+    <button class="btn btn-primary" style="background:var(--red)" id="confirm-ok">מחק</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbwkszZcm09OtJbLIT4T4RKEPiD80v_OLPfzoKPPtDZ268PdnBJP0s1pOnyykHtb6YQ9/exec';
+const PAGES={db:'לוח בקרה',inc:'הכנסות',exp:'הוצאות',loans:'הלוואות',sav:'חיסכון',tx:'עסקאות',hg:'הרגלים',mt:'מטרות',rf:'רפלקציות',ms:'משימות'};
+const MOODS={'ממוקד ורגוע':'#3a7d5e','פרודוקטיבי':'#3a5a7d','עייף אך אסיר תודה':'#c17a4a','מאתגר':'#b54a3a'};
+const TAGS={עבודה:'background:#e8e4f8;color:#4a3a9a',בריאות:'background:#e4f0ea;color:#2a6a44',אישי:'background:#f5eede;color:#7a4a1a',כספים:'background:#e4eef8;color:#2a4a7a',דחוף:'background:#f8e4e2;color:#8a2a22'};
+let cache={};
+
+async function api(action,data={}){
+  try{
+    if(!Object.keys(data).length){
+      const r=await fetch(API+'?action='+action+'&_='+Date.now());
+      const j=await r.json();return j.data;
+    }
+    const r=await fetch(API+'?action='+action,{method:'POST',body:JSON.stringify({action,...data})});
+    const j=await r.json();if(!j.ok)throw new Error(j.error||'שגיאה');return j.data;
+  }catch(e){
+    try{const p=new URLSearchParams({action,...data});const r=await fetch(API+'?'+p);const j=await r.json();return j.data;}
+    catch(e2){throw e2;}
+  }
+}
+
+function sw(id,el){
+  document.querySelectorAll('.vw').forEach(v=>v.classList.remove('act'));
+  document.getElementById('vw-'+id).classList.add('act');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  if(el)el.classList.add('act');
+  else{const m=[...document.querySelectorAll('.ni')].find(n=>n.getAttribute('onclick')?.includes("'"+id+"'"));if(m)m.classList.add('act');}
+  document.getElementById('ptitle').textContent=PAGES[id]||'';
+  loadView(id);
+}
+
+function swMob(id,el){
+  sw(id,null);
+  document.querySelectorAll('.mni').forEach(n=>n.classList.remove('act'));
+  el.classList.add('act');
+}
+
+function loadView(id){
+  const map={db:loadDashboard,inc:loadIncome,exp:loadExpenses,tx:loadTxFull,hg:loadHabits,mt:loadGoals,rf:loadReflections,ms:loadTasks};
+  if(map[id])map[id]();
+}
+
+function openModal(id){
+  document.getElementById('m-'+id).style.display='flex';
+  const d=new Date().toISOString().split('T')[0];
+  const td=document.getElementById('task-due');if(td)td.value=d;
+}
+function closeModal(id){document.getElementById('m-'+id).style.display='none';}
+
+function confirmDelete(title,sub,onConfirm){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-sub').textContent=sub;
+  document.getElementById('m-confirm').style.display='flex';
+  const btn=document.getElementById('confirm-ok');
+  btn.onclick=()=>{document.getElementById('m-confirm').style.display='none';onConfirm();};
+}
+
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function loader(){return'<div class="loader-wrap"><div class="spin"></div></div>';}
+function empty(icon,text){return`<div class="empty"><div class="empty-icon">${icon}</div><div class="empty-text">${text}</div></div>`;}
+function fmt(n){return Number(n||0).toLocaleString('he-IL');}
+function tagS(t){return TAGS[t]||'background:#f0ede8;color:#5a5040';}
+
+function txRow(t,showDel=true){
+  const inc=t.type==='income';
+  return`<div class="xi">
+    <div class="xic" style="background:${inc?'var(--green-bg)':'var(--red-bg)'};color:${inc?'var(--green)':'var(--red)'}">
+      ${inc?'↑':'↓'}
+    </div>
+    <div class="xin"><div class="xnm">${t.description||''}</div><div class="xct">${t.category||''} · ${t.date||''}</div></div>
+    <div class="xam ${inc?'xam-inc':'xam-exp'}">${inc?'+':'-'}₪${fmt(t.amount)}</div>
+    ${showDel?`<button class="del-btn" onclick="deleteTx('${t.id}','${(t.description||'').replace(/'/g,"\\'")}',event)" title="מחק">✕</button>`:''}
+  </div>`;
+}
+
+async function loadDashboard(){
+  const txEl=document.getElementById('db-tx');
+  const hEl=document.getElementById('db-habits');
+  txEl.innerHTML=loader();hEl.innerHTML=loader();
+  try{
+    const txs=cache.txs||await api('getTransactions');cache.txs=txs;
+    txEl.innerHTML=txs.slice(0,5).map(t=>txRow(t,false)).join('')||empty('💸','הוסף עסקה ראשונה');
+  }catch(e){txEl.innerHTML=empty('⚠','שגיאה בחיבור ל-Sheets');}
+  try{
+    const habits=await api('getHabits');cache.habits=habits;
+    hEl.innerHTML=habits.slice(0,5).map((h,i)=>`
+      <div class="hr">
+        <span style="font-size:16px;width:24px">${h.emoji||'⭐'}</span>
+        <span class="hn">${h.name||''}</span>
+        <button class="hbtn ${h.done_today?'done':''}" onclick="toggleHabit('${h.id}','${(h.name||'').replace(/'/g,"\\'")}',${!h.done_today},this)">${h.done_today?'✓':'○'}</button>
+        <span class="hstreak">${h.streak||0}🔥</span>
+      </div>`).join('')||empty('🌱','הוסף הרגל ראשון');
+  }catch(e){hEl.innerHTML=empty('⚠','שגיאה');}
+}
+
+async function loadIncome(){
+  const el=document.getElementById('inc-live');el.innerHTML=loader();
+  try{
+    const txs=cache.txs||await api('getTransactions');cache.txs=txs;
+    const inc=txs.filter(t=>t.type==='income');
+    el.innerHTML=inc.length?inc.map(t=>txRow(t)).join(''):empty('💰','אין הכנסות ב-Sheets עדיין');
+  }catch(e){el.innerHTML=empty('⚠','שגיאה');}
+}
+
+async function loadExpenses(){
+  const el=document.getElementById('exp-live');el.innerHTML=loader();
+  try{
+    const txs=cache.txs||await api('getTransactions');cache.txs=txs;
+    const exp=txs.filter(t=>t.type==='expense');
+    el.innerHTML=exp.length?exp.map(t=>txRow(t)).join(''):empty('🛒','אין הוצאות ב-Sheets עדיין');
+  }catch(e){el.innerHTML=empty('⚠','שגיאה');}
+}
+
+async function loadTxFull(){
+  const el=document.getElementById('tx-full');el.innerHTML=loader();
+  try{
+    const txs=cache.txs||await api('getTransactions');cache.txs=txs;
+    el.innerHTML=txs.length?txs.map(t=>txRow(t)).join(''):empty('📋','אין עסקאות עדיין');
+  }catch(e){el.innerHTML=empty('⚠','שגיאה');}
+}
+
+async function loadHabits(){
+  const el=document.getElementById('hg-list');el.innerHTML=loader();
+  try{
+    const habits=await api('getHabits');cache.habits=habits;
+    el.innerHTML=habits.map((h,i)=>`
+      <div class="hr">
+        <span style="font-size:17px;width:26px">${h.emoji||'⭐'}</span>
+        <span class="hn">${h.name||''}</span>
+        <span style="font-size:10px;color:var(--ink3);margin-left:auto;margin-right:10px">יעד: ${h.target_days||7}/שבוע</span>
+        <button class="hbtn ${h.done_today?'done':''}" onclick="toggleHabit('${h.id}','${(h.name||'').replace(/'/g,"\\'")}',${!h.done_today},this)">${h.done_today?'✓':'○'}</button>
+        <span class="hstreak">${h.streak||0}🔥</span>
+        <button class="del-btn" onclick="deleteHabit('${h.id}','${(h.name||'').replace(/'/g,"\\'")}',event)">✕</button>
+      </div>`).join('')||empty('🌱','לחץ "+ הרגל חדש" להתחיל');
+  }catch(e){el.innerHTML=empty('⚠','שגיאה');}
+}
+
+async function loadGoals(){
+  const el=document.getElementById('mt-list');
+  el.innerHTML=`<div style="grid-column:1/-1">${loader()}</div>`;
+  try{
+    const goals=await api('getGoals');cache.goals=goals;
+    el.innerHTML=goals.map(g=>`
+      <div class="gi">
+        <div class="gh"><span style="font-size:16px">${g.emoji||'🎯'}</span><span class="gt">${g.title||''}</span><span class="gz">${g.timeline||''}</span></div>
+        <div class="gdesc">${g.description||''}</div>
+        <div class="gbar"><div class="gfill" style="width:${g.pct||0}%;background:${g.color||'var(--terra)'}"></div></div>
+        <div class="gpct">${g.pct||0}% · ₪${fmt(g.current)} / ₪${fmt(g.target)}</div>
+        <button class="del-btn" style="position:absolute;top:10px;left:10px" onclick="deleteGoal('${g.id}','${(g.title||'').replace(/'/g,"\\'")}',event)">✕</button>
+      </div>`).join('')||`<div style="grid-column:1/-1">${empty('🎯','הוסף מטרה ראשונה')}</div>`;
+  }catch(e){el.innerHTML=`<div style="grid-column:1/-1">${empty('⚠','שגיאה')}</div>`;}
+}
+
+async function loadReflections(){
+  const el=document.getElementById('rf-list');el.innerHTML=loader();
+  try{
+    const rfs=await api('getReflections');
+    el.innerHTML=rfs.map(r=>`
+      <div class="rb">
+        <div class="rdate">${r.date||''}</div>
+        <div class="rtext">${r.text||''}</div>
+        <div class="rmood"><div class="mdot" style="background:${MOODS[r.mood]||'var(--terra)'}"></div>מצב רוח: ${r.mood||''}</div>
+        <button class="del-btn" style="position:absolute;top:10px;left:10px" onclick="deleteReflection('${r.id}','${(r.date||'').replace(/'/g,"\\'")}',event)">✕</button>
+      </div>`).join('')||empty('✎','כתוב את הרפלקציה הראשונה');
+  }catch(e){el.innerHTML=empty('⚠','שגיאה');}
+}
+
+async function loadTasks(){
+  const el=document.getElementById('ms-board');
+  el.innerHTML=`<div style="grid-column:1/-1">${loader()}</div>`;
+  try{
+    const tasks=await api('getTasks');cache.tasks=tasks;
+    document.getElementById('task-badge').textContent=tasks.filter(t=>!(t.done===true||t.done==='TRUE')).length;
+    const COLS=[
+      {id:'active',label:'פעיל',col:'#3a5a7d'},
+      {id:'inprogress',label:'בביצוע',col:'#c17a4a'},
+      {id:'done',label:'הושלם',col:'#3a7d5e'}
+    ];
+    el.innerHTML=COLS.map(col=>{
+      const ct=tasks.filter(t=>t.column===col.id||(col.id==='done'&&(t.done===true||t.done==='TRUE')&&t.column!=='active'&&t.column!=='inprogress'));
+      return`<div class="kcol">
+        <div class="kcol-head">
+          <div class="kcol-dot" style="background:${col.col}"></div>
+          <div class="kcol-title">${col.label}</div>
+          <div class="kcol-count">${ct.length}</div>
+        </div>
+        ${ct.length===0?'<div class="kempty">ריק</div>':''}
+        ${ct.map(t=>`<div class="ti">
+          <div class="chk ${t.done===true||t.done==='TRUE'?'done':''}" onclick="toggleTask('${t.id}',this)">${t.done===true||t.done==='TRUE'?'✓':''}</div>
+          <div class="tb">
+            <div class="tt ${t.done===true||t.done==='TRUE'?'done':''}">${t.title||''}</div>
+            <div class="tm">
+              <span class="tag" style="${tagS(t.category)}">${t.category||''}</span>
+              ${t.priority==='דחוף'?`<span class="tag" style="${tagS('דחוף')}">דחוף</span>`:''}
+              <span class="du">${t.due_date||''}</span>
+            </div>
+          </div>
+          <button class="del-btn" onclick="deleteTask('${t.id}','${(t.title||'').replace(/'/g,"\\'")}',event)">✕</button>
+        </div>`).join('')}
+        <button class="kadd" onclick="openModal('task')">+ הוסף</button>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML=`<div style="grid-column:1/-1">${empty('⚠','שגיאה')}</div>`;}
+}
+
+// ── SUBMITS ──────────────────────────────────────────────────────────────────
+async function submitTx(){
+  const amt=document.getElementById('tx-amt').value;
+  const desc=document.getElementById('tx-desc').value.trim();
+  if(!amt||!desc){toast('⚠ יש למלא סכום ותיאור','err');return;}
+  const btn=event.target;btn.disabled=true;btn.textContent='שומר...';
+  try{
+    await api('addTransaction',{type:document.getElementById('tx-type').value,amount:amt,description:desc,category:document.getElementById('tx-cat').value});
+    cache.txs=null;
+    document.getElementById('tx-amt').value='';document.getElementById('tx-desc').value='';
+    closeModal('tx');toast('✓ עסקה נשמרה בגיליון');
+    loadDashboard();
+    const active=document.querySelector('.vw.act');
+    if(active){const id=active.id.replace('vw-','');if(['tx','inc','exp'].includes(id))loadView(id);}
+  }catch(e){toast('⚠ שגיאה: '+e.message,'err');}
+  btn.disabled=false;btn.textContent='שמור בגיליון';
+}
+
+async function submitTask(){
+  const title=document.getElementById('task-title').value.trim();
+  if(!title){toast('⚠ יש להזין כותרת','err');return;}
+  const btn=event.target;btn.disabled=true;btn.textContent='שומר...';
+  try{
+    await api('addTask',{title,category:document.getElementById('task-cat').value,column:document.getElementById('task-col').value,due_date:document.getElementById('task-due').value,priority:document.getElementById('task-pri').value});
+    cache.tasks=null;document.getElementById('task-title').value='';
+    closeModal('task');toast('✓ משימה נשמרה בגיליון');
+    loadDashboard();if(document.getElementById('vw-ms').classList.contains('act'))loadTasks();
+  }catch(e){toast('⚠ שגיאה','err');}
+  btn.disabled=false;btn.textContent='שמור בגיליון';
+}
+
+async function submitHabit(){
+  const name=document.getElementById('hab-name').value.trim();
+  const emoji=document.getElementById('hab-emoji').value||'⭐';
+  if(!name){toast('⚠ יש להזין שם','err');return;}
+  const btn=event.target;btn.disabled=true;btn.textContent='שומר...';
+  try{
+    await api('addHabit',{name,emoji,target_days:document.getElementById('hab-target').value});
+    cache.habits=null;document.getElementById('hab-name').value='';document.getElementById('hab-emoji').value='';
+    closeModal('habit');toast('✓ הרגל נשמר בגיליון');
+    if(document.getElementById('vw-hg').classList.contains('act'))loadHabits();else loadDashboard();
+  }catch(e){toast('⚠ שגיאה','err');}
+  btn.disabled=false;btn.textContent='שמור בגיליון';
+}
+
+async function submitGoal(){
+  const title=document.getElementById('g-name').value.trim();
+  if(!title){toast('⚠ יש להזין שם','err');return;}
+  const btn=event.target;btn.disabled=true;btn.textContent='שומר...';
+  try{
+    await api('addGoal',{title,emoji:document.getElementById('g-emoji').value||'🎯',description:document.getElementById('g-desc').value,target:document.getElementById('g-target').value||100,current:document.getElementById('g-current').value||0,timeline:document.getElementById('g-timeline').value,color:'var(--terra)'});
+    cache.goals=null;closeModal('goal');toast('✓ מטרה נשמרה בגיליון');
+    if(document.getElementById('vw-mt').classList.contains('act'))loadGoals();
+  }catch(e){toast('⚠ שגיאה','err');}
+  btn.disabled=false;btn.textContent='שמור בגיליון';
+}
+
+async function submitReflect(){
+  const text=document.getElementById('rf-text').value.trim();
+  if(!text){toast('⚠ יש לכתוב משהו','err');return;}
+  const mood=document.getElementById('rf-mood').value;
+  const btn=event.target;btn.disabled=true;btn.textContent='שומר...';
+  try{
+    await api('addReflection',{text,mood,mood_color:MOODS[mood]||'var(--terra)'});
+    document.getElementById('rf-text').value='';closeModal('reflect');toast('✓ רפלקציה נשמרה');
+    if(document.getElementById('vw-rf').classList.contains('act'))loadReflections();
+  }catch(e){toast('⚠ שגיאה','err');}
+  btn.disabled=false;btn.textContent='שמור בגיליון';
+}
+
+// ── TOGGLES ──────────────────────────────────────────────────────────────────
+async function toggleTask(id,el){
+  el.classList.add('done');el.textContent='✓';
+  el.nextElementSibling?.querySelector('.tt')?.classList.add('done');
+  try{
+    await api('updateTask',{id,done:true,column:'done'});
+    cache.tasks=null;toast('✓ משימה הושלמה');
+    setTimeout(()=>{if(document.getElementById('vw-ms').classList.contains('act'))loadTasks();},800);
+  }catch(e){toast('⚠ שגיאה','err');}
+}
+
+async function toggleHabit(id,name,done,btn){
+  btn.classList.toggle('done',done);btn.textContent=done?'✓':'○';
+  try{await api('logHabit',{habit_id:id,habit_name:name,done});toast(done?'✓ '+name+' — הושלם':'○ '+name+' — בוטל');}
+  catch(e){toast('⚠ שגיאה','err');}
+}
+
+// ── DELETES ──────────────────────────────────────────────────────────────────
+function deleteTx(id,name,e){
+  e.stopPropagation();
+  confirmDelete('למחוק עסקה?','"'+name+'" תמחק מהגיליון לצמיתות.',async()=>{
+    try{await api('deleteTransaction',{id});cache.txs=null;toast('✓ עסקה נמחקה');loadDashboard();const active=document.querySelector('.vw.act');if(active){const vid=active.id.replace('vw-','');if(['tx','inc','exp'].includes(vid))loadView(vid);}}
+    catch(e){toast('⚠ שגיאה','err');}
+  });
+}
+
+function deleteTask(id,name,e){
+  e.stopPropagation();
+  confirmDelete('למחוק משימה?','"'+name+'" תמחק מהגיליון.',async()=>{
+    try{await api('deleteTask',{id});cache.tasks=null;toast('✓ משימה נמחקה');loadTasks();}
+    catch(e){toast('⚠ שגיאה','err');}
+  });
+}
+
+function deleteHabit(id,name,e){
+  e.stopPropagation();
+  confirmDelete('למחוק הרגל?','ההרגל "'+name+'" וכל הלוגים שלו יימחקו.',async()=>{
+    try{await api('deleteHabit',{id});cache.habits=null;toast('✓ הרגל נמחק');loadHabits();loadDashboard();}
+    catch(e){toast('⚠ שגיאה','err');}
+  });
+}
+
+function deleteGoal(id,name,e){
+  e.stopPropagation();
+  confirmDelete('למחוק מטרה?','"'+name+'" תמחק לצמיתות.',async()=>{
+    try{await api('deleteGoal',{id});cache.goals=null;toast('✓ מטרה נמחקה');loadGoals();}
+    catch(e){toast('⚠ שגיאה','err');}
+  });
+}
+
+function deleteReflection(id,date,e){
+  e.stopPropagation();
+  confirmDelete('למחוק רפלקציה?','הרפלקציה מתאריך '+date+' תמחק.',async()=>{
+    try{await api('deleteReflection',{id});toast('✓ רפלקציה נמחקה');loadReflections();}
+    catch(e){toast('⚠ שגיאה','err');}
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init(){
+  document.getElementById('pdate').textContent=new Date().toLocaleDateString('he-IL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  try{await api('initSheets');}catch(e){}
+  loadDashboard();
+}
+init();
+</script>
+</body>
+</html>
